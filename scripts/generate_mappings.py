@@ -3,17 +3,22 @@
 Interactive script to generate team and problem mapping files by fetching
 data from Algotester and mapping to contest package entities.
 
-Run with: python scripts/generate_mappings.py --contest-id 20019 --contest-package /path/to/package
+Run with: python scripts/generate_mappings.py --config config.yaml
 """
 from __future__ import annotations
 
 import argparse
 import json
 import re
+import sys
 import httpx
 import questionary
 import yaml
 from pathlib import Path
+
+# Add parent directory to path to import src modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.config import load_config
 
 
 def fetch_problem_ids_from_html(contest_id: int) -> list[str]:
@@ -86,24 +91,31 @@ def load_contest_package(package_path: Path) -> tuple[list[dict], list[dict]]:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate mapping files from Algotester")
-    parser.add_argument("--contest-id", type=int, required=True, help="Algotester contest ID")
-    parser.add_argument("--contest-package", type=Path, required=True, help="Path to contest package")
-    parser.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path("config.yaml"),
+        help="Path to configuration file",
+    )
     args = parser.parse_args()
 
-    print(f"Fetching problem list from HTML for contest {args.contest_id}...")
-    algotester_problem_ids = fetch_problem_ids_from_html(args.contest_id)
+    settings = load_config(args.config)
+    contest_id = settings.algotester_contest_id
+    contest_package_path = settings.contest_package_path
 
-    print(f"Fetching scoreboard for contest {args.contest_id}...")
-    data = fetch_scoreboard(args.contest_id)
+    print(f"Fetching problem list from HTML for contest {contest_id}...")
+    algotester_problem_ids = fetch_problem_ids_from_html(contest_id)
+
+    print(f"Fetching scoreboard for contest {contest_id}...")
+    data = fetch_scoreboard(contest_id)
 
     rows = data.get("rows", [])
     if not rows:
         print("No data found!")
         return
 
-    print(f"Loading contest package from {args.contest_package}...")
-    problems, teams = load_contest_package(args.contest_package)
+    print(f"Loading contest package from {contest_package_path}...")
+    problems, teams = load_contest_package(contest_package_path)
 
     print(f"\nFound {len(algotester_problem_ids)} problems in Algotester")
     print(f"Found {len(problems)} problems in contest package")
@@ -204,19 +216,17 @@ def main():
             print("\nAborted.")
             return
 
-    # Write problem mapping
-    problem_file = args.output_dir / "problem_mapping.yaml"
-    with open(problem_file, "w") as f:
+    # Write problem mapping to the paths specified in config
+    with open(settings.problem_mapping_file, "w") as f:
         f.write("# Problem mapping: Algotester problem ID -> CCS problem ID\n\n")
         yaml.dump(problem_mapping, f, default_flow_style=False)
-    print(f"\nWrote problem mapping to {problem_file}")
+    print(f"\nWrote problem mapping to {settings.problem_mapping_file}")
 
     # Write team mapping
-    team_file = args.output_dir / "team_mapping.yaml"
-    with open(team_file, "w") as f:
+    with open(settings.team_mapping_file, "w") as f:
         f.write("# Team mapping: Algotester team ID -> CCS team ID\n\n")
         yaml.dump(team_mapping, f, default_flow_style=False)
-    print(f"Wrote team mapping to {team_file}")
+    print(f"Wrote team mapping to {settings.team_mapping_file}")
 
 
 if __name__ == "__main__":
