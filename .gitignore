@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Config files (use .example files as templates)
+config.yaml
+team_mapping.yaml
+problem_mapping.yaml
+
+# Data directory (generated submissions/judgements)
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

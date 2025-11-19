@@ -1,0 +1,11 @@
+# Problem mapping: Algotester problem ID -> problem label
+# Format: "algotester_id": "label"
+#
+# Example:
+# "10197": "A"
+# "10198": "B"
+# "10199": "C"
+#
+# Find Algotester problem IDs from the scoreboard JSON response
+# Labels should match those in your contest package's problems.yaml
+

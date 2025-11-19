@@ -1,0 +1,10 @@
+# Team mapping: Algotester team ID -> CCS team ID
+# Format: "algotester_id": "ccs_team_id"
+#
+# Example:
+# "15167": "team001"
+# "15168": "team002"
+#
+# Find Algotester team IDs from the scoreboard JSON response
+# CCS team IDs should match those in your contest package
+
