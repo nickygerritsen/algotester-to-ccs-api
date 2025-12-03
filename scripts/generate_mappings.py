@@ -21,9 +21,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.config import load_config
 
 
-def fetch_problem_ids_from_html(contest_id: int) -> list[str]:
+def fetch_problem_ids_from_html(subdomain: str, contest_id: int) -> list[str]:
     """Fetch problem IDs from the HTML scoreboard page."""
-    url = f"https://icpc.algotester.com/en/Contest/ViewScoreboard/{contest_id}?showUnofficial=False"
+    url = f"https://{subdomain}.algotester.com/en/Contest/ViewScoreboard/{contest_id}?showUnofficial=False"
     response = httpx.get(url, timeout=30.0)
     response.raise_for_status()
 
@@ -43,7 +43,7 @@ def fetch_problem_ids_from_html(contest_id: int) -> list[str]:
     return unique_ids
 
 
-def fetch_scoreboard(contest_id: int) -> dict:
+def fetch_scoreboard(api_key: str, subdomain: str, contest_id: int) -> dict:
     """Fetch all scoreboard data from Algotester."""
     all_rows = []
     offset = 0
@@ -51,12 +51,15 @@ def fetch_scoreboard(contest_id: int) -> dict:
 
     while True:
         url = (
-            f"https://icpc.algotester.com/en/Contest/ListScoreboard/{contest_id}"
+            f"https://{subdomain}.algotester.com/en/Contest/ListScoreboardWithAPI/{contest_id}"
             f"?showUnofficial=False&offset={offset}&limit={limit}"
         )
         response = httpx.get(
             url,
-            headers={"X-Requested-With": "XMLHttpRequest"},
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "X-API-Key": api_key,
+            },
             timeout=30.0,
         )
         response.raise_for_status()
@@ -100,14 +103,16 @@ def main():
     args = parser.parse_args()
 
     settings = load_config(args.config)
+    api_key = settings.algotester_api_key
+    subdomain = settings.algotester_subdomain
     contest_id = settings.algotester_contest_id
     contest_package_path = settings.contest_package_path
 
-    print(f"Fetching problem list from HTML for contest {contest_id}...")
-    algotester_problem_ids = fetch_problem_ids_from_html(contest_id)
+    print(f"Fetching problem list from HTML for contest {contest_id} on {subdomain}...")
+    algotester_problem_ids = fetch_problem_ids_from_html(subdomain, contest_id)
 
-    print(f"Fetching scoreboard for contest {contest_id}...")
-    data = fetch_scoreboard(contest_id)
+    print(f"Fetching scoreboard for contest {contest_id} on {subdomain}...")
+    data = fetch_scoreboard(api_key, subdomain, contest_id)
 
     rows = data.get("rows", [])
     if not rows:

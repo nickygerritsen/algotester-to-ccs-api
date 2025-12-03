@@ -1,10 +1,16 @@
 # Algotester to CCS Event Feed configuration
 
+# Subdomain of Algotester
+algotester_subdomain: seerc2024
+
 # Algotester contest ID (from URL)
-algotester_contest_id: 20019
+algotester_contest_id: 6
+
+# The API key to use for Algotester requests
+algotester_api_key: secret
 
 # Path to ICPC contest package
-contest_package_path: /Users/nicky/Projects/CCS-config/unpc2025/contests/unpc2025
+contest_package_path: /Users/nicky/Projects/CCS-config/seerc2024/contests/seerc2024
 
 # Polling interval in seconds
 polling_interval: 30

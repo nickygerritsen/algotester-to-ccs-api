@@ -8,6 +8,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseModel):
+    algotester_api_key: str
+    algotester_subdomain: str
     algotester_contest_id: int
     contest_package_path: Path
     polling_interval: int = 30

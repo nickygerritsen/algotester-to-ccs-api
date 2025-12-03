@@ -6,12 +6,16 @@ import httpx
 
 
 class AlgotesterFetcher:
-    BASE_URL = "https://icpc.algotester.com/en/Contest/ListScoreboard"
+    BASE_URL = "https://{subdomain}.algotester.com/en/Contest/ListScoreboardWithAPI"
 
-    def __init__(self, contest_id: int):
+    def __init__(self, api_key: str, subdomain: str, contest_id: int):
+        self.BASE_URL = self.BASE_URL.format(subdomain=subdomain)
         self.contest_id = contest_id
         self._client = httpx.AsyncClient(
-            headers={"X-Requested-With": "XMLHttpRequest"},
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "X-API-Key": api_key,
+            },
             timeout=30.0,
         )
 

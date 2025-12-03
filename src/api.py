@@ -69,7 +69,7 @@ def create_app(settings: Settings) -> FastAPI:
     )
 
     # Initialize fetcher
-    fetcher = AlgotesterFetcher(settings.algotester_contest_id)
+    fetcher = AlgotesterFetcher(settings.algotester_api_key, settings.algotester_subdomain, settings.algotester_contest_id)
 
     # Store in app state
     app.state.contest_package = contest_package

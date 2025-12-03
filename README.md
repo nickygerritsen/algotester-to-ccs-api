@@ -29,6 +29,7 @@ pip install -r requirements.txt
    ```
 
 2. Edit `config.yaml`:
+   - `algotester_subdomain`: The subdomain for Algotester
    - `algotester_contest_id`: The contest ID from Algotester URL
    - `contest_package_path`: Path to your ICPC contest package
    - `polling_interval`: How often to fetch scoreboard (seconds)
