@@ -51,6 +51,13 @@ def create_app(settings: Settings) -> FastAPI:
     team_mapping = load_mapping(settings.team_mapping_file)
     problem_mapping = load_mapping(settings.problem_mapping_file)
 
+    # Get set of valid CCS team IDs (values in the mapping)
+    valid_team_ids = set(team_mapping.values())
+
+    def get_filtered_teams() -> list[dict]:
+        """Get teams that exist in the team mapping."""
+        return [t for t in contest_package.get_teams() if t["id"] in valid_team_ids]
+
     # Parse contest start time
     contest_data = contest_package.get_contest()
     from datetime import datetime
@@ -102,12 +109,13 @@ def create_app(settings: Settings) -> FastAPI:
         ]
 
     # Initialize static events (including teams)
+    # Only include teams that exist in the team mapping
     state_manager.initialize_static_events(
         contest=contest_data,
         judgement_types=get_judgement_types_data(),
         languages=get_languages_data(),
         problems=contest_package.get_problems(),
-        teams=contest_package.get_teams(),
+        teams=get_filtered_teams(),
     )
 
     @app.on_event("startup")
@@ -215,13 +223,16 @@ def create_app(settings: Settings) -> FastAPI:
         contest = contest_package.get_contest()
         if contest["id"] != contest_id:
             raise HTTPException(status_code=404, detail="Contest not found")
-        return contest_package.get_teams()
+        return get_filtered_teams()
 
     @app.get("/contests/{contest_id}/teams/{team_id}")
     async def get_team(contest_id: str, team_id: str, _: bool = Depends(verify_credentials)):
         contest = contest_package.get_contest()
         if contest["id"] != contest_id:
             raise HTTPException(status_code=404, detail="Contest not found")
+        # Only return team if it's in the mapping
+        if team_id not in valid_team_ids:
+            raise HTTPException(status_code=404, detail="Team not found")
         team = contest_package.get_team_by_id(team_id)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
